@@ -1,0 +1,52 @@
+@import './variables';
+
+@mixin font-size-defs ($target) {
+  @each $font-size-class in $font-size-classes {
+    $index: index($font-size-classes, $font-size-class);
+
+    // 首页
+    @if $target == index {
+      #index.#{$font-size-class} {
+        font-size: nth($font-size-levels, $index);
+
+        button, input, textarea {
+          font-size: nth($font-size-levels, $index);
+        }
+
+        .main {
+          bottom: nth($bottom-nav-height, $index);
+        }
+
+        .tabs-wrapper {
+          .title-shadow {
+            top: nth($tabs-height, $index) - $title-shadow-height;
+          }
+
+          .tabs {
+            height: nth($tabs-height, $index);
+          }
+        }
+
+        .bottom-nav {
+          height: nth($bottom-nav-height, $index);
+
+          .label {
+            height: nth($font-size-levels, $index);
+          }
+
+          .nav-item.add {
+            width: nth($bottom-nav-height, $index) + $add-fab-overflow-size;
+            height: nth($bottom-nav-height, $index) + $add-fab-overflow-size;
+          }
+        }
+      }
+    }
+
+    // 各编辑器
+    @if $target == editor {
+      .editor.#{$font-size-class} {
+        font-size: nth($font-size-levels, $index);
+      }
+    }
+  }
+}

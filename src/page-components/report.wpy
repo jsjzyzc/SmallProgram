@@ -1,0 +1,502 @@
+<template>
+  <view id="report" class="tabs-wrapper">
+    <view class="title-shadow"></view>
+    <view class="tabs collapsed">
+      <view
+        wx:for="{{ tabs }}" wx:key="{{ _tab_index }}" wx:for-item="tab" wx:for-index="_tab_index"
+        @tap="switchCategory" data-index="{{ _tab_index }}"
+        class="tab {{ activeTab === _tab_index ? 'active' : '' }}"
+        hover-class="hover" hover-start-time="20" hover-stay-time="70"
+      >{{ tab.name }}</view>
+      <view class="date-range tab" hover-class="hover" hover-start-time="20" hover-stay-time="70">
+        <picker value="{{ dateRange }}" range="{{ dateRanges }}" range-key="name" @change="changeDateRange">
+          <view class="content">{{ dateRanges[dateRange].name }}</view>
+          <view class="hot-area"></view>
+        </picker>
+      </view>
+    </view>
+    <view class="content canvas-page-wrapper">
+      <canvas wx:if="{{ _data.length >= 3 }}" canvas-id="chart" style="width: {{ canvasWidth }}px; height: {{ canvasHeight }}px"></canvas>
+      <view wx:else class="fullscreen-tip" style="width: {{ canvasWidth }}px; height: {{ canvasHeight }}px">
+        <image src="../assets/icons/chart-line.svg"></image>
+        <text wx:if="{{ _data.length === 0 }}">
+          <text>暂无数据</text>
+          <text wx:if="{{ !friendUid }}">，点击下面的加号开始记录吧</text>
+        </text>
+        <text wx:else>
+          <text>数据数量不足以显示图表</text>
+          <text wx:if="{{ !friendUid }}">，点击下面的加号继续记录吧</text>
+        </text>
+      </view>
+
+      <!-- 体重 -->
+      <scroll-view wx:if="{{ _data.length > 0 && activeTab === 0 }}" class="md-list" scroll-y>
+        <view class="section">
+          <text class="title">摘要</text>
+          <view class="summary-items">
+            <summaryitem>
+              <text slot="caption">今日</text>
+              <text slot="content">
+                <text class="number">{{ summary.weight.today }}</text>
+                <text>kg</text>
+              </text>
+            </summaryitem>
+            <summaryitem>
+              <text slot="caption">平均</text>
+              <text slot="content">
+                <text class="number">{{ summary.weight.average }}</text>
+                <text>kg</text>
+              </text>
+            </summaryitem>
+          </view>
+          <view class="summary-items">
+            <summaryitem>
+              <text slot="caption">最重</text>
+              <text slot="content">
+                <text class="number">{{ summary.weight.max }}</text>
+                <text>kg</text>
+              </text>
+            </summaryitem>
+            <summaryitem>
+              <text slot="caption">最轻</text>
+              <text slot="content">
+                <text class="number">{{ summary.weight.min }}</text>
+                <text>kg</text>
+              </text>
+            </summaryitem>
+          </view>
+        </view>
+        <view class="section">
+          <text class="title">详细信息</text>
+          <repeat for="{{ _data }}" key="{{ index }}">
+            <mdlistitem @tap.user="editWeightData">
+              <text slot="caption">{{ item.dateValue }}</text>
+              <text slot="left">{{ item.value }}kg</text>
+              <text slot="right">{{ item.delta }}</text>
+            </mdlistitem>
+          </repeat>
+        </view>
+      </scroll-view>
+
+      <!-- 血压脉搏 -->
+      <scroll-view wx:if="{{ _data.length > 0 && (activeTab === 1 || activeTab === 2) }}" class="md-list" scroll-y>
+        <view class="section" wx:if="{{ activeTab === 1 }}">
+          <text class="title">摘要</text>
+          <view class="summary-items">
+            <summaryitem>
+              <text slot="caption">今日平均</text>
+              <view slot="content">
+                <text class="number">{{ summary.systolic.today }}</text>
+                <text class="number">/</text>
+                <text class="number">{{ summary.diastolic.today }}</text>
+                <view>mmHg</view>
+              </view>
+            </summaryitem>
+            <summaryitem>
+              <text slot="caption">平均</text>
+              <view slot="content">
+                <text class="number">{{ summary.systolic.average }}</text>
+                <text class="number">/</text>
+                <text class="number">{{ summary.diastolic.average }}</text>
+                <view>mmHg</view>
+              </view>
+            </summaryitem>
+          </view>
+          <view class="summary-items">
+            <summaryitem>
+              <text slot="caption">最高</text>
+              <view slot="content">
+                <text class="number">{{ summary.systolic.max }}</text>
+                <text class="number">/</text>
+                <text class="number">{{ summary.diastolic.max }}</text>
+                <view>mmHg</view>
+              </view>
+            </summaryitem>
+            <summaryitem>
+              <text slot="caption">最低</text>
+              <view slot="content">
+                <text class="number">{{ summary.systolic.min }}</text>
+                <text class="number">/</text>
+                <text class="number">{{ summary.diastolic.min }}</text>
+                <view>mmHg</view>
+              </view>
+            </summaryitem>
+          </view>
+        </view>
+        <view class="section" wx:if="{{ activeTab === 2 }}">
+          <text class="title">摘要</text>
+          <view class="summary-items">
+            <summaryitem>
+              <text slot="caption">今日平均</text>
+              <text slot="content">
+                <text class="number">{{ summary.heartRate.today }}</text>
+                <text>bpm</text>
+              </text>
+            </summaryitem>
+            <summaryitem>
+              <text slot="caption">平均</text>
+              <text slot="content">
+                <text class="number">{{ summary.heartRate.average }}</text>
+                <text>bpm</text>
+              </text>
+            </summaryitem>
+          </view>
+          <view class="summary-items">
+            <summaryitem>
+              <text slot="caption">最高</text>
+              <text slot="content">
+                <text class="number">{{ summary.heartRate.max }}</text>
+                <text>bpm</text>
+              </text>
+            </summaryitem>
+            <summaryitem>
+              <text slot="caption">最低</text>
+              <text slot="content">
+                <text class="number">{{ summary.heartRate.min }}</text>
+                <text>bpm</text>
+              </text>
+            </summaryitem>
+          </view>
+        </view>
+        <view class="section">
+          <text class="title">详细信息</text>
+          <repeat for="{{ _data }}" key="{{ index }}">
+            <mdiconitem @tap.user="editHeartStateData">
+              <image slot="icon" src="{{ item.warning }}"></image>
+              <text slot="caption">{{ item.dateValue }}</text>
+              <text slot="left">{{ item.systolic }}mmHg / {{ item.diastolic }}mmHg, {{ item.heartRate }}bpm</text>
+            </mdiconitem>
+          </repeat>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Chart from '../lib/chart'
+  import TabMixin from '../mixins/tab'
+  import mdiconitem from '../components/md-icon-item'
+  import mdlistitem from '../components/md-list-item'
+  import summaryitem from '../components/summary-item'
+  import { timeFormat } from 'd3-time-format'
+  import { trimDate, formatDate, formatTime } from '../lib/util'
+
+  import * as qs from 'qs'
+  import * as d3Array from 'd3-array'
+
+  const METHODS = ['Weight', 'BloodPressure', 'HeartRate']
+  const xAxisFormat = timeFormat('%m/%d')
+  const WARNING_ICON = '../assets/icons/warning.svg'
+
+  const summaryTemplate = () => ({
+    today: '未知',
+    max: -Infinity,
+    min: Infinity,
+    average: 0
+  })
+
+  export default class Report extends wepy.component {
+    components = {
+      mdiconitem,
+      mdlistitem,
+      summaryitem
+    }
+
+    mixins = [TabMixin]
+
+    data = {
+      tabs: ['实时数据', '设备', '直播'].map(name => ({ name, component: './' })),
+      dateRange: Number(wx.getStorageSync('dateRange') || 2),
+      dateRanges: [
+        { name: '一周', length: 6 },
+        { name: '两周', length: 14 },
+        { name: '一个月', length: 30 },
+        { name: '两个月', length: 60 },
+        { name: '三个月', length: 90 }
+      ],
+      canvasWidth: 0,
+      canvasHeight: 0,
+      _data: [],
+      summary: {
+        weight: summaryTemplate(),
+        systolic: summaryTemplate(),
+        diastolic: summaryTemplate(),
+        heartRate: summaryTemplate()
+      },
+
+      // 亲友 uid, 当亲友 uid 为空时显示用户自己的健康报告
+      friendUid: ''
+    }
+
+    methods = {
+      switchCategory (e) {
+        const index = e.currentTarget.dataset.index
+        if ((index === 1 || index === 2) && (this.activeTab === 1 || this.activeTab === 2)) {
+          this.activeTab = index
+          this.drawChart()
+        } else {
+          this.switchTab(index)
+        }
+      },
+      changeDateRange (e) {
+        if (this.dateRange !== e.detail.value) {
+          if (!this.friendUid) {
+            wx.setStorageSync('dateRange', e.detail.value)
+          }
+
+          this.dateRange = e.detail.value
+          return this.fetchData()
+        }
+      },
+      refresh () {
+        return this.fetchData()
+      },
+      async editWeightData (e) {
+        if (this.friendUid) return
+
+        const url = './weight-editor?' + qs.stringify(this._data[e.currentTarget.dataset.comIndex])
+        const success = await this.$navigateTo('weight-editor', url)
+        if (success) return this.fetchData()
+      },
+      async editHeartStateData (e) {
+        if (this.friendUid) return
+
+        const url = './heart-state-editor?' + qs.stringify(this._data[e.currentTarget.dataset.comIndex])
+        const success = await this.$navigateTo('heart-state-editor', url)
+        if (success) return this.fetchData()
+      },
+      setFriendUid (friendUid) {
+        if (friendUid) friendUid = '/' + friendUid
+        this.friendUid = friendUid
+        this.$apply()
+      }
+    }
+
+    onLoad () {
+      // 初始化各个图表
+      this.ctx = wx.createCanvasContext('chart')
+      this.weightChart = new Chart(this.ctx, this._data, d => trimDate(d.date), d => d.value)
+      this.heartRateChart = new Chart(this.ctx, this._data, d => d.date, d => d.heartRate)
+      this.systolicChart = new Chart(this.ctx, this._data, d => d.date, d => d.systolic)
+      this.diastolicChart = new Chart(this.ctx, this._data, d => d.date, d => d.diastolic)
+
+      this.canvasWidth = this.weightChart.rect.width
+      this.canvasHeight = this.weightChart.rect.height
+    }
+
+    getDateStart () {
+      const date = trimDate() - this.dateRanges[this.dateRange].length * 24 * 60 * 60 * 1000
+      return new Date(date)
+    }
+
+    transformDate () {
+      this._data.forEach(item => { item.date = new Date(item.date) })
+    }
+
+    async fetchData () {
+      await this.$loading('正在加载...')
+      await this[`fetch${METHODS[this.activeTab]}Data`]()
+      this.drawChart()
+      await this.$loading()
+    }
+
+    async fetchWeightData () {
+      this._data = (await this.$http.get('weight' + this.friendUid, { params: { from: this.getDateStart() } })).data.data || []
+      this.transformDate()
+      this.weightChart.setData(this._data)
+
+      // 生成体重数据摘要
+      const summary = summaryTemplate()
+      this._data.forEach((item, index) => {
+        summary.max = Math.max(summary.max, item.value)
+        summary.min = Math.min(summary.min, item.value)
+        summary.average += item.value
+
+        item.dateValue = formatDate(item.date)
+        if (this._data[index + 1]) {
+          const delta = item.value - this._data[index + 1].value
+          item.delta = (delta > 0 ? '+' : '') + Math.round(delta * 100) / 100 + 'kg'
+        }
+      })
+
+      if (this._data.length > 0 && +trimDate(this._data[0].date) === +trimDate()) {
+        summary.today = this._data[0].value
+      }
+
+      summary.average = Math.round(summary.average / this._data.length * 100) / 100
+      this.summary.weight = summary
+      this.$apply()
+    }
+
+    fetchBloodPressureData () {
+      return this.fetchHeartStateData()
+    }
+
+    fetchHeartRateData () {
+      return this.fetchHeartStateData()
+    }
+
+    async fetchHeartStateData () {
+      this._data = (await this.$http.get('heart-state' + this.friendUid, { params: { from: this.getDateStart() } })).data.data || []
+      this.transformDate()
+      this.heartRateChart.setData(this._data)
+
+      // 手动计算血压图表的定义域
+      const bloodPressureDomain = [d3Array.min(this._data, d => d.diastolic), d3Array.max(this._data, d => d.systolic)]
+      this.systolicChart.setData(this._data, false)
+      this.systolicChart.updateXScale()
+      this.systolicChart.updateYScale(bloodPressureDomain)
+      this.systolicChart.updateLinearRegression()
+
+      this.diastolicChart.setData(this._data, false)
+      this.diastolicChart.updateXScale()
+      this.diastolicChart.updateYScale(bloodPressureDomain)
+      this.diastolicChart.updateLinearRegression()
+
+      // 生成摘要信息
+      this.generateHeartStateSummary()
+
+      this.$apply()
+    }
+
+    generateHeartStateSummary () {
+      const today = +trimDate()
+      const summary = {
+        systolic: summaryTemplate(),
+        diastolic: summaryTemplate(),
+        heartRate: summaryTemplate()
+      }
+
+      let todays = 0
+      this._data.forEach(item => {
+        summary.systolic.max = Math.max(summary.systolic.max, item.systolic)
+        summary.diastolic.max = Math.max(summary.diastolic.max, item.diastolic)
+        summary.heartRate.max = Math.max(summary.heartRate.max, item.heartRate)
+
+        summary.systolic.min = Math.min(summary.systolic.min, item.systolic)
+        summary.diastolic.min = Math.min(summary.diastolic.min, item.diastolic)
+        summary.heartRate.min = Math.min(summary.heartRate.min, item.heartRate)
+
+        summary.systolic.average += item.systolic
+        summary.diastolic.average += item.diastolic
+        summary.heartRate.average += item.heartRate
+
+        if (+trimDate(item.date) === today) {
+          if (typeof summary.systolic.today === 'string') {
+            summary.systolic.today = summary.diastolic.today = summary.heartRate.today = 0
+          }
+
+          summary.systolic.today += item.systolic
+          summary.diastolic.today += item.diastolic
+          summary.heartRate.today += item.heartRate
+          todays += 1
+        }
+
+        item.dateValue = formatDate(item.date) + ' ' + formatTime(item.date)
+        if (item.systolic > 140 || item.diastolic > 90) {
+          item.warning = WARNING_ICON
+        }
+      })
+
+      if (todays > 0) {
+        summary.systolic.today = Math.round(summary.systolic.today / todays)
+        summary.diastolic.today = Math.round(summary.diastolic.today / todays)
+        summary.heartRate.today = Math.round(summary.heartRate.today / todays)
+      }
+
+      summary.systolic.average = Math.round(summary.systolic.average / this._data.length)
+      summary.diastolic.average = Math.round(summary.diastolic.average / this._data.length)
+      summary.heartRate.average = Math.round(summary.heartRate.average / this._data.length)
+
+      Object.assign(this.summary, summary)
+    }
+
+    drawChart () {
+      return this[`draw${METHODS[this.activeTab]}Chart`]()
+    }
+
+    drawWeightChart () {
+      this.weightChart.clear()
+      this.weightChart.drawAxisBottom(xAxisFormat)
+      this.weightChart.drawLinearRegression()
+      this.weightChart.drawDataLine()
+      this.weightChart.drawDataPoints()
+      this.weightChart.drawAxisLeft()
+      this.weightChart.draw()
+    }
+
+    drawBloodPressureChart () {
+      this.systolicChart.clear()
+      this.systolicChart.drawAxisBottom(xAxisFormat)
+      this.systolicChart.drawAxisLeft()
+      this.systolicChart.drawLinearRegression()
+      this.systolicChart.drawDataLine()
+      this.systolicChart.drawDataPoints()
+      this.systolicChart.draw()
+
+      this.diastolicChart.drawLinearRegression()
+      this.diastolicChart.drawDataLine()
+      this.diastolicChart.drawDataPoints('white', 'black')
+      this.diastolicChart.draw()
+    }
+
+    drawHeartRateChart () {
+      this.heartRateChart.clear()
+      this.heartRateChart.drawAxisBottom(xAxisFormat)
+      this.heartRateChart.drawLinearRegression()
+      this.heartRateChart.drawDataLine()
+      this.heartRateChart.drawDataPoints()
+      this.heartRateChart.drawAxisLeft()
+      this.heartRateChart.draw()
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import '../assets/styles/variables';
+
+  #report {
+    .tabs {
+      padding-right: 8px;
+    }
+
+    .summary-items {
+      display: flex;
+      padding: 0;
+
+      &:last-child {
+        margin-top: 16px;
+      }
+
+      .summary-item {
+        flex: 1;
+      }
+    }
+
+    .date-range {
+      position: relative;
+      margin-left: auto;
+      padding: 0 4px 0 16px;
+      border-bottom: 0;
+
+      .content {
+        padding: 0 ($icon-size + 4px) 0 0;
+        border-bottom: $tabs-line-width solid transparent;
+        color: white;
+        background-image: $arrow-drop-down-white;
+        background-position: center right;
+        background-repeat: no-repeat;
+      }
+
+      .hot-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,49 @@
+<template>
+  <view class="date-range-picker md-form-item">
+    <image src="../assets/icons/date-range.svg"></image>
+    <picker class="from" mode="date" value="{{ value.from }}" end="{{ value.to }}" @change="updateFrom">
+      <view>{{ value.from }}</view>
+    </picker>
+    <view class="middle-text">至</view>
+    <picker class="to" mode="date" value="{{ value.to }}" start="{{ value.from }}" end="{{ today }}" @change="updateTo">
+      <view>{{ value.to }}</view>
+    </picker>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { formatDate } from '../lib/util'
+
+  export default class DateRangePicker extends wepy.component {
+    props = {
+      value: Object
+    }
+
+    data = {
+      today: formatDate()
+    }
+
+    methods = {
+      updateFrom (e) {
+        this.value.from = e.detail.value
+        this.$emit('change', this.value)
+      },
+      updateTo (e) {
+        this.value.to = e.detail.value
+        this.$emit('change', this.value)
+      }
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import '../assets/styles/variables';
+
+  .date-range-picker {
+    .middle-text {
+      position: relative;
+      top: -1px;
+    }
+  }
+</style>

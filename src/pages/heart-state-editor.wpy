@@ -1,0 +1,47 @@
+<template>
+  <view class="editor {{ fontSize }}">
+    <view class="title-shadow"></view>
+    <heartstateeditor mode="edit"></heartstateeditor>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import FontSizeMixin from '../mixins/font-size'
+  import heartstateeditor from '../page-components/heart-state-editor'
+  import { formatDate, formatTime } from '../lib/util'
+
+  export default class HeartStateEditor extends wepy.page {
+    config = {
+      navigationBarTitleText: '修改体重记录'
+    }
+    mixins = [FontSizeMixin]
+
+    components = {
+      heartstateeditor
+    }
+
+    data = {
+      heartStateData: null
+    }
+
+    onLoad (data) {
+      const dateTime = decodeURIComponent(data.date)
+      data.date = formatDate(dateTime)
+      data.time = formatTime(dateTime)
+
+      this.heartStateData = data
+      this.$invoke('heartstateeditor', 'setData', data)
+    }
+
+    onUnload () {
+      this.$globalEvents.emit('heart-state-editor')
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import '../assets/styles/variables';
+  @import '../assets/styles/font-sizes';
+  @include font-size-defs(editor);
+</style>

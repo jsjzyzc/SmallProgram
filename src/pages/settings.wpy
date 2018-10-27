@@ -1,0 +1,99 @@
+<template>
+  <view id="settings" class="editor {{ fontSize }}">
+    <view class="title-shadow"></view>
+    <view class="canvas-page-wrapper">
+      <scroll-view class="md-list" scroll-y>
+        <view class="section">
+          <text class="title">设置</text>
+          <mdlistitem @tap.user="changeFontSize">
+            <text slot="caption">字体大小</text>
+            <text slot="left">{{ FONT_SIZES[fontSize] }}</text>
+          </mdlistitem>
+        </view>
+        <view class="section">
+          <text class="title">反馈</text>
+          <mdlistitem>
+            <text slot="caption">小程序测试版</text>
+            <text slot="left">如果您在试用中发现任何问题，或者有任何改进建议，欢迎随时联系我们</text>
+          </mdlistitem>
+          <mdlistitem>
+            <text slot="caption">反馈邮箱</text>
+            <text slot="left">xcxheart@qq.com</text>
+          </mdlistitem>
+          <mdlistitem>
+            <text slot="caption">留言</text>
+            <text slot="left">点击右上角“…”按键，在“相关公众号”选择并关注“曹龙兴医生”，在公众号中留言</text>
+          </mdlistitem>
+        </view>
+        <view class="section">
+          <text class="title">开源信息</text>
+          <view class="md-list-item" hover-class="hover" hover-start-time="20" hover-stay-time="70">
+            <view class="caption">项目主页</view>
+            <view class="content">
+              <view class="left" style="width: 100%; word-wrap: break-word">https://github.com/hjkcai/cardiovascular-tracker</view>
+            </view>
+          </view>
+          <mdlistitem>
+            <text slot="caption">开源协议</text>
+            <text slot="left">本小程序基于 MIT 协议开放全部源代码，在项目主页中可查看更多信息。欢迎开 issue</text>
+          </mdlistitem>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import mdlistitem from '../components/md-list-item'
+  import FontSizeMixin from '../mixins/font-size'
+
+  const FONT_SIZES = ['small', 'normal', 'large', 'x-large']
+
+  export default class Settings extends wepy.page {
+    config = {
+      navigationBarTitleText: '小程序选项'
+    }
+
+    mixins = [FontSizeMixin]
+
+    components = {
+      mdlistitem
+    }
+
+    data = {
+      FONT_SIZES: {
+        'small': '小',
+        'normal': '普通',
+        'large': '大',
+        'x-large': '特大'
+      }
+    }
+
+    methods = {
+      async changeFontSize () {
+        try {
+          const { tapIndex } = await wepy.showActionSheet({
+            itemList: ['小', '普通', '大', '特大']
+          })
+
+          wx.setStorageSync('font-size', FONT_SIZES[tapIndex])
+          this.$state.fontSize = FONT_SIZES[tapIndex]
+          this.$globalEvents.emit('fontSizeChanged')
+        } catch (e) {}
+      }
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import '../assets/styles/variables';
+  @import '../assets/styles/font-sizes';
+  @include font-size-defs(editor);
+
+  #settings {
+    .md-list {
+      padding: 0;
+    }
+  }
+</style>

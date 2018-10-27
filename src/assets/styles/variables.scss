@@ -1,0 +1,73 @@
+// 主颜色
+$primary: #d32f2f;
+$primary-dark: #b71c1c;
+
+// 灰色
+$gray: #757575;
+$light-gray: #bdbdbd;
+
+// 白色
+$dark-white: #eee;
+$darker-white: #e0e0e0;
+
+// 背景色
+$background-color: white;
+
+// 标题栏下的阴影
+$title-shadow: 0 0 6px black;
+$title-shadow-height: 2px;
+
+// 可用的字体大小级别
+$font-size-classes: small, normal, large, x-large;
+$font-size-levels: 14px, 16px, 18px, 20px;
+
+// 图标大小
+$icon-size: 24px;
+
+// 常用的半透明黑色
+$transparent-black: rgba(0, 0, 0, 0.33);
+
+// 阴影
+$shadow-2px: 0 2px 6px $transparent-black;
+$bottom-nav-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+
+// 常用的过渡定义
+$transition: 0.33s ease;
+
+// 下拉菜单箭头图片
+$arrow-drop-down: url(data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik03IDEwbDUgNSA1LTV6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg==);
+$arrow-drop-down-white: url(data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik03IDEwbDUgNSA1LTV6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg==);
+
+// 重置微信内置按钮样式
+@mixin button-reset {
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  line-height: 1;
+  background-color: transparent;
+
+  &::after {
+    border: 0;
+  }
+}
+
+// 页面
+$page-padding-left-right: 12px;
+$page-padding-top: 16px;
+
+// 分隔线
+$sperator-color: #e0e0e0;
+$sperator-margin: 16px;
+
+// 底部导航栏高度
+$bottom-nav-height: 58px, 60px, 62px, 64px;
+$add-fab-overflow-size: 16px;
+
+// 顶部导航栏
+$tabs-height: 40px, 40px, 48px, 48px;
+$tabs-line-width: 2px;
+$tab-label-color: rgba(255, 255, 255, 0.75);
+
+// 通用输入框
+$input-height: 27px;
+$input-border-bottom: 1px;

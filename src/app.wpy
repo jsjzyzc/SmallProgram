@@ -1,0 +1,335 @@
+<script>
+  import wepy from 'wepy'
+  import './lib/wepy'
+  import 'wepy-async-function'
+
+  import state from './lib/state'
+
+  export default class extends wepy.app {
+    constructor () {
+      super()
+      this.use('promisify')
+    }
+
+    config = {
+      pages: [
+        'pages/index',
+        'pages/report',
+        'pages/settings',
+        'pages/no-permission',
+        'pages/weight-editor',
+        'pages/disease-editor',
+        'pages/userinfo-editor',
+        'pages/heart-state-editor'
+      ],
+      window: {
+        backgroundTextStyle: 'light',
+        navigationBarBackgroundColor: '#D32F2F',
+        navigationBarTitleText: 'EasyFarming',
+        navigationBarTextStyle: 'white'
+      }
+    }
+
+    onLaunch (options) {
+      state.scene = options.scene
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import './assets/styles/variables';
+
+  view, navigator, textarea, input {
+    box-sizing: border-box;
+  }
+
+  .title-shadow {
+    position: fixed;
+    left: 0;
+    top: -$title-shadow-height;
+    width: 100%;
+    height: $title-shadow-height;
+    box-shadow: $title-shadow;
+  }
+
+  .hr {
+    margin: $sperator-margin 0;
+    border-top: 1px solid $sperator-color;
+  }
+
+  .md-button {
+    @include button-reset;
+    border-radius: 2px;
+    box-shadow: $shadow-2px;
+    text-align: center;
+    color: white;
+    background-color: $primary;
+
+    &.button-hover {
+      background-color: $primary-dark;
+    }
+  }
+
+  .tabs-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .title-shadow {
+      z-index: 1;
+    }
+
+    .tabs {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex: none;
+      color: $tab-label-color;
+      background-color: $primary;
+
+      .tab {
+        padding-bottom: $tabs-line-width;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: $tabs-line-width solid transparent;
+        font-weight: bold;
+
+        &.hover {
+          background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        &.active {
+          border-bottom-color: white;
+          color: white;
+        }
+      }
+
+      &.collapsed {
+        padding: 0 12px;
+
+        .tab {
+          flex: none;
+          padding: 0 16px;
+        }
+      }
+    }
+
+    & > .content {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    & > .page {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background-color: $background-color;
+    }
+  }
+
+  .canvas-page-wrapper {
+    height: 100%;
+    padding-top: $page-padding-top;
+    display: flex;
+    flex-direction: column;
+
+    & > canvas {
+      flex: none;
+    }
+
+    & > view {
+      padding: 0 $page-padding-left-right;
+    }
+  }
+
+  .md-list {
+    flex: 1;
+    margin-top: $sperator-margin;
+    padding: 0;
+    border-top: 1px solid $sperator-color;
+    overflow: hidden;
+
+    .section {
+      padding: $sperator-margin 0;
+      border-top: 1px solid $sperator-color;
+
+      &:first-child {
+        border-top: 0;
+      }
+
+      & > view {
+        padding-left: $page-padding-left-right;
+        padding-right: $page-padding-left-right;
+      }
+    }
+
+    .title {
+      display: block;
+      padding-left: $page-padding-left-right + 4px;
+      margin-bottom: 16px;
+      color: $gray;
+    }
+
+    view.md-list-item, view.md-icon-item, view.md-form-item {
+      padding: 12px 16px;
+    }
+
+    view.md-list-item, view.md-icon-item {
+      .content {
+        margin-top: 2px;
+        display: flex;
+        color: $gray;
+        font-size: 0.9em;
+        overflow: hidden;
+
+        .right {
+          margin-left: auto;
+        }
+      }
+
+      &.hover {
+        background-color: $dark-white;
+      }
+    }
+
+    view.md-icon-item, view.md-form-item {
+      display: flex;
+      align-items: center;
+
+      & > image:first-child, & > .icon {
+        width: $icon-size;
+        height: $icon-size;
+        margin-right: 16px;
+        flex: none;
+      }
+
+      .icon > image {
+        width: $icon-size;
+        height: $icon-size;
+      }
+    }
+
+    view.md-list-item {
+      .caption, .content {
+        margin-left: 16px + $icon-size;
+      }
+    }
+
+    view.md-icon-item {
+      .content-wrapper {
+        flex: 1;
+      }
+    }
+
+    view.md-form-item {
+      white-space: nowrap;
+
+      & > view, & > text, & > image, & > input, & > picker {
+        margin-right: 8px;
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+
+      & > image:first-child {
+        margin-right: 16px;
+        margin-bottom: $input-border-bottom * 2;
+      }
+    }
+
+    input, picker {
+      position: relative;
+      height: $input-height;
+      border-bottom: $input-border-bottom solid $light-gray;
+      flex: 1;
+    }
+
+    picker {
+      padding-right: $icon-size;
+      background-image: $arrow-drop-down;
+      background-position: center right;
+      background-repeat: no-repeat;
+
+      view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    view.textarea-wrapper {
+      display: flex;
+      padding-top: 0;
+      padding-bottom: 0;
+
+      textarea {
+        flex: 1;
+        line-height: 1.2;
+      }
+    }
+
+    .submit {
+      padding-top: 0;
+
+      .note {
+        margin-top: 16px;
+        text-align: center;
+        font-size: 0.9em;
+        color: $gray;
+
+        &.delete {
+          color: $primary;
+        }
+      }
+
+      button {
+        margin: 12px;
+        padding: 12px 0;
+      }
+    }
+
+    &:first-child {
+      margin-top: 0;
+      border-top: 0;
+
+      .section:first-child {
+        padding-top: 0;
+      }
+    }
+  }
+
+  scroll-view.md-list {
+    overflow: scroll;
+  }
+
+  view.fullscreen-tip {
+    padding: 0 10%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.25;
+    color: $gray;
+
+    image {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 8px;
+    }
+  }
+</style>

@@ -1,0 +1,46 @@
+<template>
+  <view class="editor {{ fontSize }}">
+    <view class="title-shadow"></view>
+    <weighteditor mode="edit"></weighteditor>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import weighteditor from '../page-components/weight-editor'
+  import FontSizeMixin from '../mixins/font-size'
+  import { formatDate } from '../lib/util'
+
+  export default class WeightEditor extends wepy.page {
+    config = {
+      navigationBarTitleText: '修改体重记录'
+    }
+
+    mixins = [FontSizeMixin]
+
+    components = {
+      weighteditor
+    }
+
+    data = {
+      weightData: null
+    }
+
+    onLoad (data) {
+      data.date = formatDate(decodeURIComponent(data.date))
+
+      this.weightData = data
+      this.$invoke('weighteditor', 'setData', data)
+    }
+
+    onUnload () {
+      this.$globalEvents.emit('weight-editor')
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import '../assets/styles/variables';
+  @import '../assets/styles/font-sizes';
+  @include font-size-defs(editor);
+</style>

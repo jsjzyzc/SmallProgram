@@ -1,0 +1,174 @@
+<template>
+  <scroll-view id="friends" scroll-y>
+    <view class="friends-wrapper" wx:if="{{ friends.length > 0 }}">
+      <view class="friends md-list">
+        <view class="unconfirmed-friends" wx:if="{{ hasUnconfirmedFriends }}">
+          <text class="title">新的亲友</text>
+          <view class="friend md-icon-item unconfirmed" wx:for="{{ friends }}" wx:key="{{ index }}" wx:if="{{ !item.confirmed }}">
+            <image src="{{ item.avatarUrl }}"></image>
+            <text>{{ item.nickName }}</text>
+            <button class="ignore" @tap="ignoreFriend" data-index="{{ index }}">忽略</button>
+            <button class="md-button" @tap="addFriend" data-index="{{ index }}">接受</button>
+          </view>
+        </view>
+        <view class="confirmed-friends">
+          <text class="title" wx:if="{{ hasUnconfirmedFriends }}">所有亲友</text>
+          <view
+            class="friend md-icon-item"
+            wx:for="{{ friends }}" wx:key="{{ index }}" wx:if="{{ item.confirmed }}"
+            @tap="showReport" @longtap="removeFriend" data-index="{{ index }}"
+            hover-class="hover" hover-start-time="20" hover-stay-time="70"
+          >
+            <image src="{{ item.avatarUrl }}"></image>
+            <text>{{ item.nickName }}</text>
+          </view>
+        </view>
+        <view class="note">在“健康报告”页面把报告转发给微信好友来添加亲友</view>
+      </view>
+    </view>
+    <view class="no-friend fullscreen-tip" wx:else>
+      <image src="../assets/icons/face.svg"></image>
+      <text>暂无亲友。切换到“健康报告”页面，将您的报告分享给微信好友，双方同意后即可互相查看健康报告</text>
+    </view>
+  </scroll-view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Friends extends wepy.component {
+    data = {
+      friends: []
+    }
+
+    computed = {
+      hasUnconfirmedFriends () {
+        return this.friends.some(friend => !friend.confirmed)
+      }
+    }
+
+    methods = {
+      async addFriend (e) {
+        await this.$loading('正在处理...')
+
+        const friend = this.friends[e.currentTarget.dataset.index]
+        const result = (await this.$http.post('friend', { uid: friend.uid })).data
+        if (result.code) {
+          await this.$modal('错误', `添加亲友失败: ${result.message} (${result.code})`)
+        } else {
+          await this.refresh()
+        }
+
+        await this.$loading()
+      },
+      async ignoreFriend (e) {
+        const friend = this.friends[e.currentTarget.dataset.index]
+        return this.removeFriend(friend.uid)
+      },
+      async removeFriend (e) {
+        const friend = this.friends[e.currentTarget.dataset.index]
+        const index = await wepy.showActionSheet({
+          itemList: ['删除亲友']
+        }).then(a => a.tapIndex).catch(() => null)
+
+        if (index === 0 && await this.$modal('提示', `你确定要删除亲友${friend.nickName}吗？`, true)) {
+          return this.removeFriend(friend.uid)
+        }
+      },
+      showReport (e) {
+        const friend = this.friends[e.currentTarget.dataset.index]
+        this.$navigateTo('./report?uid=' + friend.uid)
+      }
+    }
+
+    async removeFriend (uid) {
+      await this.$loading('正在处理')
+
+      const result = (await this.$http.delete('friend?uid=' + uid)).data
+      if (result.code) {
+        await this.$modal('错误', `删除亲友失败: ${result.message} (${result.code})`)
+      } else {
+        await this.refresh()
+      }
+
+      await this.$loading()
+    }
+
+    async refresh () {
+      await this.$loading('正在加载...')
+
+      const friends = (await this.$http.get('friends')).data
+      if (friends.code) {
+        await this.$modal(`获取亲友信息失败：${friends.message} (${friends.code})`)
+      } else {
+        this.friends = friends.data
+        this.$globalEvents.emit('unconfirmedFriendsChanged', this.friends.reduce((count, friend) => {
+          if (!friend.confirmed) count += 1
+          return count
+        }, 0))
+
+        this.$apply()
+      }
+
+      await this.$loading()
+    }
+  }
+</script>
+
+<style lang="scss">
+  @import '../assets/styles/variables';
+
+  #friends {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    .no-friend {
+      padding-top: 32px;
+    }
+
+    .friend {
+      image {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+      }
+
+      button {
+        padding: 8px 16px;
+        margin-left: auto;
+      }
+
+      .ignore {
+        @include button-reset;
+        margin-left: auto;
+        padding: 8px 16px;
+        color: $primary;
+        font-size: 0.9em;
+
+        & + button {
+          margin-left: 0;
+        }
+      }
+    }
+
+    .unconfirmed-friends {
+      padding-top: 16px;
+      background-color: $dark-white;
+    }
+
+    .confirmed-friends {
+      padding-top: 16px;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 0 10% 16px;
+      text-align: center;
+      font-size: 0.9em;
+      color: $gray;
+    }
+  }
+</style>
