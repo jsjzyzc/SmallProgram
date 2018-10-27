@@ -32,11 +32,12 @@ async function _login () {
   if (state.code && await wepy.checkSession()) code = state.code
   else code = (await wepy.login()).code     // TODO: 错误处理
 
-  const userinfo = await wepy.getUserInfo().catch(() => {})
+  const userinfo = await wepy.getUserInfo().catch(() => {
+  })
   const user = {loginParam: 'administrator', password: 'administrator'}
   if (!userinfo) return false
 
-  const WhetherBind = (await axios.post('wechat/whetherBind', { user })).data
+  const WhetherBind = (await axios.post('wechat/whetherBind', {user})).data
   if (WhetherBind.state === 1) {
     // 获取请求 token
     const bind = (await axios.post('wechat/bind', {code, user})).data
@@ -59,29 +60,30 @@ async function _login () {
         console.log('ok')
       }
     })
-  //   const token = (await axios.post('wechatLogin', {code})).data
-  //   if (token.state === 1) {
-  //     console.log(wx.getStorageSync('sessionid'))
-  //     // setToken(token.data)
-  //   } else {
-  //     console.log(wx.getStorageSync('sessionid'))
-  //     throw new Error(`登录错误: ${token.message} (${token.state})`)
-  //   }
-  // }
-  // 获取并储存用户信息
-  // const userinfoDetail = (await axios.get('userinfo')).data
-  // if (userinfoDetail.code) {
-  //   setToken('')
-  //   throw new Error(`无法获取用户信息: ${userinfoDetail.message} (${userinfoDetail.code})`)
-  // } else {
-  //   updateUserinfo({
-  //     ...userinfo.userInfo,
-  //     ...userinfoDetail.data
-  //   })
-  // }
+    //   const token = (await axios.post('wechatLogin', {code})).data
+    //   if (token.state === 1) {
+    //     console.log(wx.getStorageSync('sessionid'))
+    //     // setToken(token.data)
+    //   } else {
+    //     console.log(wx.getStorageSync('sessionid'))
+    //     throw new Error(`登录错误: ${token.message} (${token.state})`)
+    //   }
+    // }
+    // 获取并储存用户信息
+    // const userinfoDetail = (await axios.get('userinfo')).data
+    // if (userinfoDetail.code) {
+    //   setToken('')
+    //   throw new Error(`无法获取用户信息: ${userinfoDetail.message} (${userinfoDetail.code})`)
+    // } else {
+    //   updateUserinfo({
+    //     ...userinfo.userInfo,
+    //     ...userinfoDetail.data
+    //   })
+    // }
 
-  await $loading()
-  return true
+    await $loading()
+    return true
+  }
 }
 
 export function updateUserinfo (userinfo) {
